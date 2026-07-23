@@ -1,0 +1,389 @@
+/**
+ * @gceico/cookie-consent styles.css
+ *
+ * Self-contained, prefixed (`.ccb-*`) stylesheet — no Tailwind required.
+ * Every color is `hsl(var(--ccb-...))`; the only literal color values in
+ * this file are the HSL triples defining those variables (and the shadow).
+ * Override any `--ccb-*` variable on `:root` (or any ancestor of the
+ * banner) to re-theme it — the defaults below are just a neutral starting
+ * point, not a specific brand's tokens.
+ */
+
+:root {
+  --ccb-card: 0 0% 100%;
+  --ccb-card-foreground: 220 25% 12%;
+  --ccb-primary: 245 12% 20%;
+  --ccb-primary-foreground: 340 20% 97%;
+  --ccb-muted: 220 10% 94%;
+  --ccb-muted-foreground: 220 10% 35%;
+  --ccb-accent: 245 10% 16%;
+  --ccb-accent-foreground: 340 20% 97%;
+  --ccb-border: 220 15% 90%;
+  --ccb-shadow-elegant: 0 8px 32px -8px hsl(220 30% 20% / 0.12);
+  --ccb-radius: 0.75rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ccb-card: 245 8% 8%;
+    --ccb-card-foreground: 245 5% 96%;
+    --ccb-primary: 245 20% 72%;
+    --ccb-primary-foreground: 245 15% 8%;
+    --ccb-muted: 245 6% 15%;
+    --ccb-muted-foreground: 245 5% 72%;
+    --ccb-accent: 245 15% 60%;
+    --ccb-accent-foreground: 245 10% 8%;
+    --ccb-border: 245 8% 20%;
+    --ccb-shadow-elegant: 0 8px 32px -8px hsl(245 20% 72% / 0.1);
+  }
+}
+
+/* Explicit dark-mode class, for hosts (like app/) with a manual toggle
+   instead of (or in addition to) `prefers-color-scheme`. */
+.dark {
+  --ccb-card: 245 8% 8%;
+  --ccb-card-foreground: 245 5% 96%;
+  --ccb-primary: 245 20% 72%;
+  --ccb-primary-foreground: 245 15% 8%;
+  --ccb-muted: 245 6% 15%;
+  --ccb-muted-foreground: 245 5% 72%;
+  --ccb-accent: 245 15% 60%;
+  --ccb-accent-foreground: 245 10% 8%;
+  --ccb-border: 245 8% 20%;
+  --ccb-shadow-elegant: 0 8px 32px -8px hsl(245 20% 72% / 0.1);
+}
+
+.ccb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+.ccb-modal {
+  width: 100%;
+  max-width: 42rem;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--ccb-card));
+  color: hsl(var(--ccb-card-foreground));
+  border: 1px solid hsl(var(--ccb-border));
+  border-radius: var(--ccb-radius);
+  box-shadow: var(--ccb-shadow-elegant);
+  pointer-events: auto;
+  font-family: inherit;
+}
+
+.ccb-modal__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.ccb-tabs__list--modal {
+  width: 100%;
+  height: auto;
+  display: flex;
+  border-bottom: 1px solid hsl(var(--ccb-border));
+  flex-shrink: 0;
+}
+
+.ccb-tabs__trigger {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.75rem 0.5rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--ccb-card-foreground));
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.ccb-tabs__trigger--active {
+  color: hsl(var(--ccb-primary));
+  border-bottom-color: hsl(var(--ccb-primary));
+}
+
+.ccb-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  font-size: 0.875rem;
+  margin-top: 0;
+}
+
+.ccb-panel__title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.ccb-panel__desc {
+  color: hsl(var(--ccb-muted-foreground));
+  line-height: 1.6;
+  margin: 0 0 1rem;
+}
+
+.ccb-panel__footer {
+  color: hsl(var(--ccb-muted-foreground));
+  font-size: 0.75rem;
+  line-height: 1.6;
+  margin: 1rem 0 0;
+}
+
+.ccb-link {
+  color: hsl(var(--ccb-primary));
+  text-decoration: underline;
+}
+
+.ccb-link:hover {
+  text-decoration: none;
+}
+
+.ccb-gpc-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.75rem;
+  border-top: 1px solid hsl(var(--ccb-border));
+  border-bottom: 1px solid hsl(var(--ccb-border));
+  font-size: 0.875rem;
+  color: hsl(var(--ccb-muted-foreground));
+}
+
+.ccb-gpc-notice__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: hsl(var(--ccb-primary));
+  color: hsl(var(--ccb-primary-foreground));
+  font-size: 0.7rem;
+}
+
+.ccb-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border: 1px solid hsl(var(--ccb-border));
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .ccb-category-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.ccb-category-grid__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0.5rem;
+  border-right: 1px solid hsl(var(--ccb-border));
+  border-bottom: 1px solid hsl(var(--ccb-border));
+}
+
+.ccb-category-grid__cell:nth-child(even) {
+  border-right: none;
+}
+
+.ccb-category-grid__cell:nth-last-child(-n + 2) {
+  border-bottom: none;
+}
+
+@media (min-width: 768px) {
+  .ccb-category-grid__cell {
+    border-bottom: none;
+  }
+
+  .ccb-category-grid__cell:nth-child(even) {
+    border-right: 1px solid hsl(var(--ccb-border));
+  }
+
+  .ccb-category-grid__cell:last-child {
+    border-right: none;
+  }
+}
+
+.ccb-category-grid__label {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.ccb-details-list {
+  border: 1px solid hsl(var(--ccb-border));
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.ccb-details-list__row {
+  padding: 1rem;
+  border-bottom: 1px solid hsl(var(--ccb-border));
+}
+
+.ccb-details-list__row:last-child {
+  border-bottom: none;
+}
+
+.ccb-details-list__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.ccb-details-list__label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.ccb-details-list__desc {
+  color: hsl(var(--ccb-muted-foreground));
+  font-size: 0.75rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ccb-about {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: hsl(var(--ccb-muted-foreground));
+  line-height: 1.6;
+}
+
+.ccb-about p {
+  margin: 0;
+}
+
+.ccb-actions {
+  display: flex;
+  flex-shrink: 0;
+  border-top: 1px solid hsl(var(--ccb-border));
+  border-radius: 0 0 var(--ccb-radius) var(--ccb-radius);
+  overflow: hidden;
+}
+
+.ccb-actions__button {
+  flex: 1;
+  border-right: 1px solid hsl(var(--ccb-border));
+}
+
+.ccb-actions__button:last-child {
+  border-right: none;
+}
+
+.ccb-button {
+  height: 3rem;
+  border: none;
+  background: transparent;
+  color: hsl(var(--ccb-card-foreground));
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ccb-button:hover {
+  background: hsl(var(--ccb-accent) / 0.08);
+}
+
+.ccb-button--solid {
+  background: hsl(var(--ccb-primary));
+  color: hsl(var(--ccb-primary-foreground));
+}
+
+.ccb-button--solid:hover {
+  background: hsl(var(--ccb-primary) / 0.9);
+}
+
+.ccb-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 2.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--ccb-border));
+  background: hsl(var(--ccb-muted));
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ccb-switch[data-state="checked"] {
+  background: hsl(var(--ccb-primary));
+}
+
+.ccb-switch--disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ccb-switch__thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: hsl(var(--ccb-card));
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ccb-switch__thumb[data-state="checked"] {
+  transform: translateX(1rem);
+}
+
+.ccb-reopen {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 9998;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: hsl(var(--ccb-card));
+  border: 1px solid hsl(var(--ccb-border));
+  color: hsl(var(--ccb-card-foreground));
+  box-shadow: var(--ccb-shadow-elegant);
+  cursor: pointer;
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ccb-reopen:hover {
+  background: hsl(var(--ccb-accent) / 0.08);
+}
+
+.ccb-reopen__icon {
+  font-size: 1.125rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ccb-switch,
+  .ccb-switch__thumb,
+  .ccb-button,
+  .ccb-reopen {
+    transition: none;
+  }
+}
