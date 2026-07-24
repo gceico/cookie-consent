@@ -10,12 +10,16 @@
  */
 import type { ConsentModeOptions, ConsentPrefs } from "./types";
 
-declare global {
-  interface Window {
-    dataLayer: unknown[];
-    gtag?: (...args: unknown[]) => void;
-  }
-}
+/** gtag/dataLayer shape, applied by casting `window` locally rather than
+ * augmenting the global `Window` — a global augmentation clashes with a
+ * consumer's own `Window.gtag` declaration (ts2687: "All declarations of
+ * 'gtag' must have identical modifiers"). */
+type GtagWindow = {
+  dataLayer: unknown[];
+  gtag?: (...args: unknown[]) => void;
+};
+
+const gtagWindow = () => window as unknown as GtagWindow;
 
 const DEFAULT_REGION = ["EEA", "EU", "GB", "CH", "IS", "LI", "NO"];
 const DEFAULT_EVENT_NAME = "cookie_consent_update";
@@ -39,11 +43,12 @@ const ALL_SIGNALS = [
 ];
 
 function pushGtag(...args: unknown[]) {
-  window.dataLayer = window.dataLayer || [];
-  if (typeof window.gtag === "function") {
-    window.gtag(...args);
+  const win = gtagWindow();
+  win.dataLayer = win.dataLayer || [];
+  if (typeof win.gtag === "function") {
+    win.gtag(...args);
   } else {
-    window.dataLayer.push(args);
+    win.dataLayer.push(args);
   }
 }
 
@@ -73,8 +78,9 @@ export function bootstrapConsentMode(options: ConsentModeOptions = {}): void {
   const region = options.region ?? DEFAULT_REGION;
   const waitForUpdateMs = options.waitForUpdateMs ?? 500;
 
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = window.gtag || ((...args: unknown[]) => window.dataLayer.push(args));
+  const win = gtagWindow();
+  win.dataLayer = win.dataLayer || [];
+  win.gtag = win.gtag || ((...args: unknown[]) => win.dataLayer.push(args));
 
   pushGtag("consent", "default", {
     analytics_storage: "denied",
@@ -127,10 +133,11 @@ export function bootstrapConsentMode(options: ConsentModeOptions = {}): void {
  * an existing decision, and after every explicit/migrated choice). */
 export function applyConsent(prefs: ConsentPrefs, options: ConsentModeOptions = {}): void {
   if (typeof window === "undefined") return;
-  window.dataLayer = window.dataLayer || [];
+  const win = gtagWindow();
+  win.dataLayer = win.dataLayer || [];
   const categoryToSignals = options.categoryToSignals ?? DEFAULT_CATEGORY_TO_SIGNALS;
   const update = buildSignalUpdate(prefs, categoryToSignals);
   pushGtag("consent", "update", update);
   const eventName = options.eventName ?? DEFAULT_EVENT_NAME;
-  window.dataLayer.push({ event: eventName, consent: prefs });
+  win.dataLayer.push({ event: eventName, consent: prefs });
 }

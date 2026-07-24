@@ -1,17 +1,15 @@
-# @gceico/cookie-consent: self-hosted React cookie consent banner (Cookiebot alternative)
+# @gceico/cookie-consent
 
-A self-contained, config-driven **cookie consent banner for React** apps, and a self-hosted
-**Cookiebot alternative** you own instead of rent: no design-system dependency, no analytics
-vendor lock-in, and a pluggable backend so you can log GDPR/CCPA consent decisions anywhere (or
-nowhere).
+A self-hosted **cookie consent banner for React** — a **Cookiebot alternative** you own instead
+of rent. No design-system dependency, no analytics vendor lock-in, and a pluggable backend so
+consent decisions can be logged anywhere (or nowhere).
 
 ![React cookie consent banner with categorized cookie preferences, matching the visitor's light or dark theme](img/cookie-consent-demo.png)
 
-- **Categorized consent**: necessary/preferences/statistics/marketing out of the box, fully
-  configurable
+- **Categorized consent**: necessary/preferences/statistics/marketing, fully configurable
 - **Google Consent Mode v2** built in, GA4 wiring opt-in
 - **GDPR/CCPA-style audit trail** via a pluggable `StorageAdapter` (Supabase, REST, or none)
-- **No vendor lock-in**: no subscription, no third-party script tag, no external dashboard
+- **No vendor lock-in**: no subscription, no third-party script, no external dashboard
 - **Cookiebot migration**: one config flag parses and replaces a legacy Cookiebot cookie
 - **Themeable with plain CSS variables**: no Tailwind or design-system dependency required
 
@@ -33,10 +31,7 @@ export function App() {
       {/* ...your app... */}
       <CookieConsent
         config={{
-          text: {
-            policyHref: "/cookie-policy/",
-            privacyHref: "/privacy/",
-          },
+          text: { policyHref: "/cookie-policy/", privacyHref: "/privacy/" },
         }}
       />
     </>
@@ -45,168 +40,140 @@ export function App() {
 ```
 
 That's it — with no `config` at all you get a working, generically-worded banner with four
-categories (necessary/preferences/statistics/marketing), a `cookie_consent` cookie, and no
-backend logging (`noopAdapter`). Everything below is opt-in refinement.
+categories, a `cookie_consent` cookie, and no backend logging. Everything below is opt-in.
 
-## Config reference
+## Config
 
-All fields on `CookieConsentConfig` (passed as `config={...}`) are optional.
+Everything on `CookieConsentConfig` is optional; the full type lives in `src/config.ts`. The
+fields you'll actually reach for:
 
-| Field                       | Type                         | Default                                    | Purpose                                                                           |
-| --------------------------- | ---------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------- |
-| `cookieName`                | `string`                     | `"cookie_consent"`                         | Cookie the consent record is persisted under                                      |
-| `tokenStorageKey`           | `string`                     | `"cc_token"`                               | localStorage key for the anonymous audit token                                    |
-| `consentVersion`            | `number`                     | `1`                                        | Bump to invalidate existing cookies after a schema/copy change                    |
-| `bannerVersion`             | `number`                     | `1`                                        | Recorded on every logged decision; track UI revisions independently               |
-| `categories`                | `ConsentCategory[]`          | necessary/preferences/statistics/marketing | `{ id, label, description, alwaysOn }[]`                                          |
-| `text`                      | `Partial<CookieConsentText>` | generic copy, see `src/config.ts`          | All banner strings; `{policyLink}`/`{privacyLink}` placeholders render as anchors |
-| `trigger.timeoutMs`         | `number`                     | `6000`                                     | Show the banner after this many ms if the visitor hasn't scrolled                 |
-| `trigger.scrollThresholdPx` | `number`                     | `400`                                      | Show the banner once the visitor scrolls this far                                 |
-| `globalOpenFnName`          | `string`                     | `"openCookieConsent"`                      | `window[name]()` reopens the banner                                               |
-| `openEventName`             | `string`                     | `"cookie-consent:open"`                    | Dispatch this event on `window` to reopen the banner                              |
-| `storage`                   | `StorageAdapter`             | `noopAdapter()`                            | Where finished decisions get logged — see [Backend adapters](#backend-adapters)   |
-| `consentMode`               | `ConsentModeOptions`         | `undefined` (off)                          | Google Consent Mode v2 + optional GA4 wiring — see below                          |
-| `migrateFromCookiebot`      | `boolean`                    | `false`                                    | Parse + migrate a legacy Cookiebot cookie on first load                           |
+| Field                  | Default                | Purpose                                                   |
+| ----------------------- | ----------------------- | ----------------------------------------------------------- |
+| `categories`            | 4 defaults              | `{ id, label, description, alwaysOn }[]`                     |
+| `text`                  | generic copy            | All banner strings; `{policyLink}`/`{privacyLink}` render as anchors |
+| `storage`               | `noopAdapter()`         | Where decisions get logged — see [Backend adapters](#backend-adapters) |
+| `consentMode`           | off                     | Google Consent Mode v2 + optional GA4 — see below            |
+| `migrateFromCookiebot`  | `false`                 | Parse + migrate a legacy Cookiebot cookie on first load      |
+| `globalOpenFnName` / `openEventName` | `openCookieConsent` / `cookie-consent:open` | Reopen the banner via `window[fn]()` or a dispatched event |
 
-Reopening the banner also works out of the box via `a[href="#consent"]` or any element with a
-`data-open-consent` attribute — clicks on those are delegated automatically.
-
-### `ConsentCategory`
-
-```ts
-interface ConsentCategory {
-  id: string; // stable key, used in ConsentPrefs and the cookie
-  label: string; // shown in the category grid + details tab
-  description: string; // shown in the details tab
-  alwaysOn: boolean; // true = can't be toggled off (e.g. "necessary")
-}
-```
-
-### `CookieConsentText`
-
-Every visible string in the banner — title, description, tab labels, category-grid labels come
-from `categories` but descriptions/about copy/button labels are here. `description`,
-`detailsFooter`, and each entry in `aboutParagraphs` may contain the literal placeholders
-`{policyLink}` and `{privacyLink}`, which render as `<a href={text.policyHref}>` /
-`<a href={text.privacyHref}>` respectively.
+Reopening also works out of the box via `a[href="#consent"]` or any `[data-open-consent]`
+element — clicks on those are delegated automatically.
 
 ## Backend adapters
 
-The component never talks to a database directly — it builds a `ConsentLogPayload` (token,
-version, method, gpc, prefs, bannerVersion, userAgent, url) and hands it to whatever
-`StorageAdapter` you configure via `config.storage`. Adapters are fire-and-forget: a failed log
-never blocks the visitor's consent decision from applying.
-
-### 1. Supabase (`supabaseAdapter`)
+The component never talks to a database directly — it builds a `ConsentLogPayload` and hands it
+to whatever `StorageAdapter` you configure. Adapters are fire-and-forget: a failed log never
+blocks the visitor's decision from applying.
 
 ```ts
+// Supabase — run backend/supabase/migration.sql against your project first
 import { supabaseAdapter } from "@gceico/cookie-consent";
+const storage = supabaseAdapter({ url, anonKey, table: "consent_logs" });
 
-const storage = supabaseAdapter({
-  url: import.meta.env.PUBLIC_SUPABASE_URL,
-  anonKey: import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  table: "consent_logs", // optional, this is the default
-});
-```
-
-Run the migration in `backend/supabase/migration.sql` against your project first (table name
-must match the `table` option — both default to `consent_logs`):
-
-```sql
-create table if not exists public.consent_logs (
-  id uuid primary key default gen_random_uuid(),
-  created_at timestamptz not null default now(),
-  token uuid not null,
-  version int not null,
-  method text not null check (method in ('explicit', 'gpc', 'migrated')),
-  gpc boolean not null default false,
-  prefs jsonb not null,
-  banner_version int not null,
-  user_agent text,
-  url text
-);
--- + indexes + RLS anon-insert-only policy, see the full file
-```
-
-### 2. Generic REST endpoint (`restAdapter`)
-
-```ts
+// Generic REST — pair with backend/serverless/consent-endpoint.ts as a starting point
 import { restAdapter } from "@gceico/cookie-consent";
+const storage = restAdapter({ endpoint: "/api/consent-log" });
 
-const storage = restAdapter({
-  endpoint: "/api/consent-log",
-  headers: { "X-Api-Key": "..." }, // optional
-});
+// No backend — the default. Banner still cookies decisions and applies Consent Mode.
 ```
-
-Pair it with a serverless function like `backend/serverless/consent-endpoint.ts` (a
-dependency-light, Netlify-Function-shaped reference handler you copy into your own
-`netlify/functions/`, Vercel route, or equivalent):
-
-```ts
-export async function handler(event) {
-  if (event.httpMethod !== "POST") return { statusCode: 405 };
-  const payload = JSON.parse(event.body);
-  // validate + insert/forward wherever you like
-  return { statusCode: 204 };
-}
-```
-
-### 3. No backend (`noopAdapter`)
-
-The default. The banner still works fully — decisions are cookied and Consent Mode still
-applies — they just aren't logged anywhere.
 
 ## Consent Mode v2 (opt-in)
-
-Two pieces, both from `@gceico/cookie-consent`:
-
-- `bootstrapConsentMode(options)` — call once, as early as possible (ideally inline in
-  `<head>`, before any tag manager script), to set Consent Mode v2 defaults to denied and
-  optionally load GA4.
-- `applyConsent(prefs, options)` — called automatically by `<CookieConsent>` whenever the
-  visitor's decision changes; you can also call it yourself if you need to re-apply consent
-  elsewhere.
 
 ```html
 <script type="module">
   import { bootstrapConsentMode } from "@gceico/cookie-consent";
-  bootstrapConsentMode({
-    measurementId: "G-XXXXXXX", // omit to skip GA4 entirely — Consent Mode still works
-    region: ["EEA", "EU", "GB", "CH", "IS", "LI", "NO"],
-  });
+  bootstrapConsentMode({ measurementId: "G-XXXXXXX", region: ["EEA", "EU", "GB"] });
 </script>
 ```
 
 ```tsx
-<CookieConsent
-  config={{
-    consentMode: { measurementId: "G-XXXXXXX" },
-  }}
-/>
+<CookieConsent config={{ consentMode: { measurementId: "G-XXXXXXX" } }} />
 ```
 
-GA4 wiring is entirely opt-in — omit `measurementId` and you get pure Consent Mode v2 signal
-management with no analytics script loaded. The `dataLayer`/`gtag` fallback and a configurable
-custom event name (`eventName`, default `cookie_consent_update`) are always kept, so any tag
-manager already reading `dataLayer` keeps working.
+Omit `measurementId` to skip GA4 entirely — Consent Mode still applies. The `dataLayer`/`gtag`
+fallback keeps working for any tag manager already reading `dataLayer`.
+
+**Already load GA4 yourself?** Leave `consentMode` unset. The banner still forwards every decision
+to Consent Mode — it pushes `gtag('consent', 'update', …)` plus a `dataLayer` event on each choice —
+it just won't load `gtag.js` for you. This is the common "existing GA, just gate it" setup: no
+`bootstrapConsentMode`, no `measurementId`, no `consentMode` config needed.
 
 ## Cookiebot migration (opt-in)
-
-If you're replacing an existing Cookiebot install, set `migrateFromCookiebot: true`. On first
-load, the banner will parse Cookiebot's legacy `CookieConsent` cookie into your category shape,
-apply it as a `"migrated"` decision (skipping the visible banner for that visitor), and delete
-Cookiebot's cookies so its script doesn't reappear if you haven't removed it from the page yet.
 
 ```tsx
 <CookieConsent config={{ migrateFromCookiebot: true }} />
 ```
 
+Parses Cookiebot's legacy cookie into your category shape, applies it as a `"migrated"`
+decision (no visible banner for that visitor), and deletes Cookiebot's cookies.
+
+## Full integration example
+
+Supabase adapter, custom cookie/token keys, custom reopen API, and Cookiebot migration combined —
+swap `acme` for your own project:
+
+```tsx
+import { CookieConsent, supabaseAdapter, type StorageAdapter } from "@gceico/cookie-consent";
+import "@gceico/cookie-consent/styles.css";
+
+const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
+const SUPABASE_KEY = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+
+const storage: StorageAdapter | undefined =
+  SUPABASE_URL && SUPABASE_KEY
+    ? supabaseAdapter({ url: SUPABASE_URL, anonKey: SUPABASE_KEY, table: "consent_logs" })
+    : undefined;
+
+const CookieBanner = () => (
+  <CookieConsent
+    config={{
+      cookieName: "acme_consent",
+      tokenStorageKey: "acme_ctok",
+      globalOpenFnName: "acmeOpenConsent",
+      openEventName: "acme:open-consent",
+      migrateFromCookiebot: true,
+      storage,
+      text: {
+        title: "Help shape a better Acme.com",
+        policyHref: "/cookies/",
+        privacyHref: "/privacy/",
+      },
+    }}
+  />
+);
+
+export default CookieBanner;
+```
+
+## Stored cookie shape
+
+The consent cookie holds a URL-encoded JSON `ConsentRecord`:
+
+```jsonc
+{
+  "version": 1, // matches config.consentVersion
+  "stamp": "2026-07-24T10:00:00.000Z", // ISO timestamp of the decision
+  "method": "explicit", // "explicit" | "gpc" | "migrated"
+  "gpc": false, // was Global Privacy Control active
+  "prefs": { "necessary": true, "statistics": false } // per-category booleans
+}
+```
+
+A stored cookie is read back as valid only when its `version` equals the current
+`consentVersion` (and `prefs` is present); otherwise the visitor is re-prompted. So to reuse an
+existing cookie, point `cookieName` at it **and** set `consentVersion` to the version stored in
+those records — a mismatch silently re-prompts.
+
+## SSR / meta-frameworks
+
+Client-only component (touches `document`/`window`). Render it in a client boundary — an Astro
+island (`client:load`), a Next.js `"use client"` component, etc. It's inert during SSR and
+mounts on the client.
+
 ## Theming via CSS vars
 
-Import `@gceico/cookie-consent/styles.css` once. Every color in the stylesheet is
-`hsl(var(--ccb-*))` — no Tailwind required, no design-system dependency. Override any variable
-on `:root` (or an ancestor of the banner) to re-theme it:
+Import `@gceico/cookie-consent/styles.css` once. Every color is `hsl(var(--ccb-*))` — override
+any variable on `:root` to re-theme:
 
 ```css
 :root {
@@ -216,26 +183,20 @@ on `:root` (or an ancestor of the banner) to re-theme it:
 }
 ```
 
-Dark mode is handled two ways simultaneously — `@media (prefers-color-scheme: dark)` and a
-`.dark` class selector — so it works whether your app follows the OS theme or has its own
-manual toggle.
+Dark mode works via both `@media (prefers-color-scheme: dark)` and a `.dark` class selector, so
+it follows the OS theme or your own manual toggle.
 
-## vs. Cookiebot, Osano, and other hosted consent-management platforms
+## vs. Cookiebot, Osano, and other hosted CMPs
 
-Cookiebot, Osano, and similar hosted consent-management platforms (CMPs) mean a third-party
-script, a subscription, and your visitors' consent decisions living in someone else's database.
-`@gceico/cookie-consent` gives you the same UX pattern (categorized consent, Consent Mode v2, an
-audit trail) as code you own: no recurring fee, no external script tag, and a backend you control
-(or skip) instead of a vendor dashboard.
-
-## Origin
-
-Extracted from a production, config-driven cookie consent banner built for a small SaaS site,
-generalized so it carries no brand-specific copy or styling.
+Hosted consent-management platforms mean a third-party script, a subscription, and your
+visitors' consent decisions living in someone else's database. `@gceico/cookie-consent` gives you
+the same UX — categorized consent, Consent Mode v2, an audit trail — as code you own: no
+recurring fee, no external script, and a backend you control (or skip).
 
 ## License
 
-MIT
+MIT — extracted from a production banner built for a small SaaS site, generalized to carry no
+brand-specific copy or styling.
 
 ## Who's behind this
 
