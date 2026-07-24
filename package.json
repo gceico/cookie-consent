@@ -1,6 +1,6 @@
 {
   "name": "@gceico/cookie-consent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Self-contained, config-driven cookie consent banner with pluggable storage adapters and Google Consent Mode v2 helpers. A Cookiebot alternative you own.",
   "license": "MIT",
