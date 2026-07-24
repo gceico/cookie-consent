@@ -1,8 +1,6 @@
 # @gceico/cookie-consent
 
-A self-contained, config-driven cookie consent banner for React apps: no design-system
-dependency, no analytics vendor lock-in, and a pluggable backend so you can log decisions
-anywhere (or nowhere).
+A self-contained, config-driven cookie consent banner for React apps: no design-system dependency, no analytics vendor lock-in, and a pluggable backend so you can log decisions anywhere (or nowhere).
 
 ## Quick start
 
@@ -42,7 +40,7 @@ backend logging (`noopAdapter`). Everything below is opt-in refinement.
 All fields on `CookieConsentConfig` (passed as `config={...}`) are optional.
 
 | Field                       | Type                         | Default                                    | Purpose                                                                           |
-| --------------------------- | ---------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------- |
+|-----------------------------|------------------------------|--------------------------------------------|-----------------------------------------------------------------------------------|
 | `cookieName`                | `string`                     | `"cookie_consent"`                         | Cookie the consent record is persisted under                                      |
 | `tokenStorageKey`           | `string`                     | `"cc_token"`                               | localStorage key for the anonymous audit token                                    |
 | `consentVersion`            | `number`                     | `1`                                        | Bump to invalidate existing cookies after a schema/copy change                    |
