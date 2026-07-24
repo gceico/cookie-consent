@@ -14,12 +14,6 @@ import type {
   ResolvedCookieConsentConfig,
 } from "./types";
 
-declare global {
-  interface Window {
-    [key: string]: unknown;
-  }
-}
-
 export interface CookieConsentProps {
   config?: CookieConsentConfig;
 }
@@ -158,7 +152,8 @@ export function CookieConsent({ config }: CookieConsentProps) {
   // Reopen hooks: global function, custom event, and delegated clicks on
   // `a[href="#consent"]` / `[data-open-consent]`.
   useEffect(() => {
-    window[resolved.globalOpenFnName] = open;
+    const globals = window as unknown as Record<string, unknown>;
+    globals[resolved.globalOpenFnName] = open;
     const handler = () => open();
     window.addEventListener(resolved.openEventName, handler);
     const linkHandler = (e: Event) => {
@@ -175,7 +170,7 @@ export function CookieConsent({ config }: CookieConsentProps) {
     return () => {
       window.removeEventListener(resolved.openEventName, handler);
       document.removeEventListener("click", linkHandler);
-      if (window[resolved.globalOpenFnName] === open) delete window[resolved.globalOpenFnName];
+      if (globals[resolved.globalOpenFnName] === open) delete globals[resolved.globalOpenFnName];
     };
   }, [open, resolved.globalOpenFnName, resolved.openEventName]);
 
