@@ -1,6 +1,19 @@
-# @gceico/cookie-consent
+# @gceico/cookie-consent: self-hosted React cookie consent banner (Cookiebot alternative)
 
-A self-contained, config-driven cookie consent banner for React apps: no design-system dependency, no analytics vendor lock-in, and a pluggable backend so you can log decisions anywhere (or nowhere).
+A self-contained, config-driven **cookie consent banner for React** apps, and a self-hosted
+**Cookiebot alternative** you own instead of rent: no design-system dependency, no analytics
+vendor lock-in, and a pluggable backend so you can log GDPR/CCPA consent decisions anywhere (or
+nowhere).
+
+![React cookie consent banner with categorized cookie preferences, matching the visitor's light or dark theme](img/cookie-consent-demo.png)
+
+- **Categorized consent**: necessary/preferences/statistics/marketing out of the box, fully
+  configurable
+- **Google Consent Mode v2** built in, GA4 wiring opt-in
+- **GDPR/CCPA-style audit trail** via a pluggable `StorageAdapter` (Supabase, REST, or none)
+- **No vendor lock-in**: no subscription, no third-party script tag, no external dashboard
+- **Cookiebot migration**: one config flag parses and replaces a legacy Cookiebot cookie
+- **Themeable with plain CSS variables**: no Tailwind or design-system dependency required
 
 ## Quick start
 
@@ -40,7 +53,7 @@ backend logging (`noopAdapter`). Everything below is opt-in refinement.
 All fields on `CookieConsentConfig` (passed as `config={...}`) are optional.
 
 | Field                       | Type                         | Default                                    | Purpose                                                                           |
-|-----------------------------|------------------------------|--------------------------------------------|-----------------------------------------------------------------------------------|
+| --------------------------- | ---------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------- |
 | `cookieName`                | `string`                     | `"cookie_consent"`                         | Cookie the consent record is persisted under                                      |
 | `tokenStorageKey`           | `string`                     | `"cc_token"`                               | localStorage key for the anonymous audit token                                    |
 | `consentVersion`            | `number`                     | `1`                                        | Bump to invalidate existing cookies after a schema/copy change                    |
@@ -207,13 +220,13 @@ Dark mode is handled two ways simultaneously — `@media (prefers-color-scheme: 
 `.dark` class selector — so it works whether your app follows the OS theme or has its own
 manual toggle.
 
-## vs. Cookiebot
+## vs. Cookiebot, Osano, and other hosted consent-management platforms
 
-Cookiebot (and similar hosted consent tools) means a third-party script, a subscription, and
-your visitors' consent decisions living in someone else's database. `@gceico/cookie-consent` is
-the same UX pattern — categorized consent, Consent Mode v2, an audit trail — as code you own: no
-recurring fee, no external script tag, and a backend you control (or skip) instead of a vendor
-dashboard.
+Cookiebot, Osano, and similar hosted consent-management platforms (CMPs) mean a third-party
+script, a subscription, and your visitors' consent decisions living in someone else's database.
+`@gceico/cookie-consent` gives you the same UX pattern (categorized consent, Consent Mode v2, an
+audit trail) as code you own: no recurring fee, no external script tag, and a backend you control
+(or skip) instead of a vendor dashboard.
 
 ## Origin
 
@@ -223,3 +236,14 @@ generalized so it carries no brand-specific copy or styling.
 ## License
 
 MIT
+
+## Who's behind this
+
+I'm Gabriel. I build things like this for fun and ship the ones that turn out
+good. Check out [One's Skills](https://github.com/gceico/ones-skills), my
+Claude Skills collection, [Claude Make It Rain](https://github.com/gceico/claude-make-it-rain), a
+desktop app that rains money on your screen for Claude Code milestones, or come say hi at
+[Aibl.to](https://aibl.to/), where I run AI workshops and help people turn their expertise into
+compounded value.
+
+— Gabriel C.
